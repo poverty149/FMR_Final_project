@@ -66,6 +66,16 @@ def avoid():
             avoid_col['c']=1
         if(states_col[i.state]['d']==1):
             avoid_col['d']=1
+def cmp_conf(state,avoid_col):
+    if(avoid_col['a']==1 and states_col[state]['a']==1):
+        return False
+    if(avoid_col['b']==1 and states_col[state]['b']==1):
+        return False
+    if(avoid_col['c']==1 and states_col[state]['c']==1):
+        return False
+    if(avoid_col['d']==1 and states_col[state]['d']==1):
+        return False
+    return True
 
 class Vehicle(pygame.sprite.Sprite):
     def __init__(self):
@@ -92,7 +102,7 @@ class Vehicle(pygame.sprite.Sprite):
         self.y=y[self.direction_number]
         self.direction=direction[self.direction_number]
         self.state=state(self.direction_number,self.signal)
-        print(self.state)
+        # print(self.state)
 
         
         vehicles[self.direction].append(self)
@@ -139,6 +149,10 @@ class Vehicle(pygame.sprite.Sprite):
                 intersection['right'].append(self)
             if(defaultStop['right']+5>self.x>defaultStop['right']):
                 arrivedStop['right']=(pygame.time.get_ticks(),self.index)
+                if(track[track_no]=='right'):
+                    avoid()
+                if(track[track_no]!='right' and cmp_conf(self.state,avoid_col)):
+                    self.x-=self.speed
                 # print(arrivedStop['right'])
             if(self.x>=defaultStop['right'] and (self.x>vehicles[self.direction][self.index-1].x+vehicles[self.direction][self.index-1].image.get_rect().width+stoppingGap or self.index==0)):
                 self.x-=self.speed
@@ -170,6 +184,10 @@ class Vehicle(pygame.sprite.Sprite):
                 intersection['left'].append(self)
             if(defaultStop['left']-5<self.x+self.image.get_rect().width<defaultStop['left']):
                 arrivedStop['left']=(pygame.time.get_ticks(),self.index)
+                if(track[track_no]=='left'):
+                    avoid()
+                if(track[track_no]!='left' and cmp_conf(self.state,avoid_col)):
+                    self.x+=self.speed
             # if(track[track_no]=='right'):
             if(self.x+self.image.get_rect().width<=defaultStop['left'] and (self.x+self.image.get_rect().width<vehicles[self.direction][self.index-1].x-stoppingGap or self.index==0)):
                 self.x+=self.speed
@@ -200,6 +218,10 @@ class Vehicle(pygame.sprite.Sprite):
                 intersection['up'].append(self)
             if(defaultStop['up']-5<self.y+self.image.get_rect().height<defaultStop['up']):
                 arrivedStop['up']=(pygame.time.get_ticks(),self.index)
+                if(track[track_no]=='up'):
+                    avoid()
+                if(track[track_no]!='up' and cmp_conf(self.state,avoid_col)):
+                    self.y+=self.speed
             # if(track[track_no]=='right'):
             if(self.y+self.image.get_rect().height<=defaultStop['up'] and (self.y+self.image.get_rect().height<vehicles[self.direction][self.index-1].y-stoppingGap or self.index==0)):
                 self.y+=self.speed
@@ -230,6 +252,10 @@ class Vehicle(pygame.sprite.Sprite):
                 intersection['down'].append(self)
             if(defaultStop['down']<self.y<defaultStop['down']+5):
                 arrivedStop['down']=(pygame.time.get_ticks(),self.index)
+                if(track[track_no]=='down'):
+                    avoid()
+                if(track[track_no]!='down' and cmp_conf(self.state,avoid_col)):
+                    self.y-=self.speed
             # if(track[track_no]=='right'):
             if(self.y>=defaultStop['down'] and (self.y>vehicles[self.direction][self.index-1].y+vehicles[self.direction][self.index-1].image.get_rect().height+stoppingGap or self.index==0)):
                 self.y-=self.speed
@@ -421,7 +447,7 @@ while proceed:
             if(sel_track==None):
                 track_no=random.randint(0,3)
             else:
-                for i in range(0,3):
+                for i in range(0,4):
                     if(sel_track!=i and arrivedStop[track[i]][0]!=None and arrivedStop[track[i]][0]<min_time):
                         min_time=arrivedStop[track[i]][0]
                         sel_track=i
